@@ -568,3 +568,39 @@ select {
 }
 
 }
+
+/* HU-06 - Gestión de residentes */
+
+.encabezado-residentes {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.formulario-residente {
+  margin-bottom: 25px;
+  padding: 20px;
+  border-radius: 8px;
+  background: #f7f7f7;
+}
+
+.formulario-residente h3 {
+  margin-top: 0;
+}
+
+@media (max-width: 700px) {
+  .encabezado-residentes {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.resumen-tabla {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}

@@ -5,7 +5,7 @@ function App() {
   // NAVEGACIÓN
 
   const [seccionActiva, setSeccionActiva] = useState('inicio')
- 
+
   // HU-01 - REGISTRO DE PAGOS
   const [nombre, setNombre] = useState('')
   const [fecha, setFecha] = useState('')
@@ -58,6 +58,42 @@ function App() {
   const [buscarResidente, setBuscarResidente] = useState('')
   const [buscarFecha, setBuscarFecha] = useState('')
 
+  // HU-06 - GESTIÓN DE RESIDENTES
+  const [residentes, setResidentes] = useState([
+    {
+      id: 1,
+      nombre: 'Ana López',
+      casa: '12',
+      telefono: '5551234567',
+      estado: 'Activo',
+    },
+    {
+      id: 2,
+      nombre: 'Carlos Ruiz',
+      casa: '8',
+      telefono: '5559876543',
+      estado: 'Activo',
+    },
+    {
+      id: 3,
+      nombre: 'María Gómez',
+      casa: '15',
+      telefono: '5554567890',
+      estado: 'Activo',
+    },
+  ])
+
+  const [buscarResidenteAdmin, setBuscarResidenteAdmin] = useState('')
+
+  const [mostrarFormularioResidente, setMostrarFormularioResidente] =
+    useState(false)
+
+  const [nuevoResidente, setNuevoResidente] = useState({
+    nombre: '',
+    casa: '',
+    telefono: '',
+  })
+
   // HU-01 - REGISTRAR PAGO
   const registrarPago = (e) => {
     e.preventDefault()
@@ -84,6 +120,57 @@ function App() {
   }
 
 
+  // HU-06 - REGISTRAR RESIDENTE
+  const registrarResidente = (e) => {
+    e.preventDefault()
+
+    if (
+      !nuevoResidente.nombre ||
+      !nuevoResidente.casa ||
+      !nuevoResidente.telefono
+    ) {
+      alert('Completa todos los datos del residente')
+      return
+    }
+
+    const residente = {
+      id: Date.now(),
+      nombre: nuevoResidente.nombre,
+      casa: nuevoResidente.casa,
+      telefono: nuevoResidente.telefono,
+      estado: 'Activo',
+    }
+
+    setResidentes([...residentes, residente])
+
+    setNuevoResidente({
+      nombre: '',
+      casa: '',
+      telefono: '',
+    })
+
+    setMostrarFormularioResidente(false)
+
+    alert('Residente registrado correctamente')
+  }
+
+  // HU-06 - CAMBIAR ESTADO DEL RESIDENTE
+  const cambiarEstadoResidente = (id) => {
+    setResidentes(
+      residentes.map((residente) =>
+        residente.id === id
+          ? {
+            ...residente,
+            estado:
+              residente.estado === 'Activo'
+                ? 'Inactivo'
+                : 'Activo',
+          }
+          : residente
+      )
+    )
+  }
+
   // CÁLCULOS
   const totalRecaudado = pagos.reduce(
     (total, pago) => total + pago.monto,
@@ -96,7 +183,7 @@ function App() {
   )
 
   // HU-04 - INFORMACIÓN DEL RESIDENTE
-  const residentes = [
+  const residentesCuenta  = [
     'Ana López',
     'Carlos Ruiz',
     'José Martínez',
@@ -140,6 +227,13 @@ function App() {
 
     return coincideResidente && coincideFecha
   })
+
+  // HU-06 - FILTRAR RESIDENTES
+  const residentesFiltrados = residentes.filter((residente) =>
+    residente.nombre
+      .toLowerCase()
+      .includes(buscarResidenteAdmin.toLowerCase())
+  )
 
   const limpiarBusqueda = () => {
     setBuscarResidente('')
@@ -227,6 +321,16 @@ function App() {
           onClick={() => cambiarSeccion('busqueda')}
         >
           Búsqueda
+        </button>
+        <button
+          className={
+            seccionActiva === 'residentes'
+              ? 'menu-activo'
+              : ''
+          }
+          onClick={() => cambiarSeccion('residentes')}
+        >
+          Residentes
         </button>
       </nav>
       {seccionActiva === 'inicio' && (
@@ -436,7 +540,7 @@ function App() {
                 setResidenteSeleccionado(e.target.value)
               }
             >
-              {residentes.map((residente) => (
+              {residentesCuenta.map((residente) => (
                 <option
                   key={residente}
                   value={residente}
@@ -502,7 +606,7 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-              {pagosResidente.map((pago) => (
+                {pagosResidente.map((pago) => (
                   <tr key={pago.id}>
                     <td>
                       {pago.fecha}
@@ -593,6 +697,172 @@ function App() {
               </tbody>
             </table>
           )}
+        </section>
+      )}
+
+      {seccionActiva === 'residentes' && (
+        <section className="seccion">
+          <div className="encabezado-residentes">
+            <div>
+              <h2>Gestión de residentes</h2>
+
+              <p>
+                Registra y consulta la información administrativa
+                de los residentes.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="boton-principal"
+              onClick={() =>
+                setMostrarFormularioResidente(
+                  !mostrarFormularioResidente
+                )
+              }
+            >
+              {mostrarFormularioResidente
+                ? 'Cancelar'
+                : '+ Nuevo residente'}
+            </button>
+          </div>
+
+          {mostrarFormularioResidente && (
+            <form
+              onSubmit={registrarResidente}
+              className="formulario formulario-residente"
+            >
+              <h3>Registrar residente</h3>
+
+              <div className="campo">
+                <label>Nombre completo</label>
+
+                <input
+                  type="text"
+                  value={nuevoResidente.nombre}
+                  onChange={(e) =>
+                    setNuevoResidente({
+                      ...nuevoResidente,
+                      nombre: e.target.value,
+                    })
+                  }
+                  placeholder="Ej. Juan Pérez"
+                />
+              </div>
+
+              <div className="campo">
+                <label>Número de casa</label>
+
+                <input
+                  type="text"
+                  value={nuevoResidente.casa}
+                  onChange={(e) =>
+                    setNuevoResidente({
+                      ...nuevoResidente,
+                      casa: e.target.value,
+                    })
+                  }
+                  placeholder="Ej. 20"
+                />
+              </div>
+
+              <div className="campo">
+                <label>Teléfono</label>
+
+                <input
+                  type="tel"
+                  value={nuevoResidente.telefono}
+                  onChange={(e) =>
+                    setNuevoResidente({
+                      ...nuevoResidente,
+                      telefono: e.target.value,
+                    })
+                  }
+                  placeholder="Ej. 5551234567"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="boton-principal"
+              >
+                Guardar residente
+              </button>
+            </form>
+          )}
+
+          <div className="formulario-busqueda">
+            <div className="campo">
+              <label>Buscar residente</label>
+
+              <input
+                type="text"
+                value={buscarResidenteAdmin}
+                onChange={(e) =>
+                  setBuscarResidenteAdmin(e.target.value)
+                }
+                placeholder="Nombre del residente"
+              />
+            </div>
+          </div>
+
+          <div className="resumen-tabla">
+            <strong>
+              Residentes registrados: {residentes.length}
+            </strong>
+
+            <strong>
+              Resultados: {residentesFiltrados.length}
+            </strong>
+          </div>
+
+          <table className="tabla">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Casa</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {residentesFiltrados.map((residente) => (
+                <tr key={residente.id}>
+                  <td>{residente.nombre}</td>
+
+                  <td>{residente.casa}</td>
+
+                  <td>{residente.telefono}</td>
+
+                  <td>
+                    <span
+                      className={
+                        residente.estado === 'Activo'
+                          ? 'estado-corriente'
+                          : 'estado-pendiente'
+                      }
+                    >
+                      {residente.estado}
+                    </span>
+                  </td>
+
+                  <td>
+                    <button
+                      type="button"
+                      className="boton-secundario"
+                      onClick={() =>
+                        cambiarEstadoResidente(residente.id)
+                      }
+                    >
+                      Cambiar estado
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </section>
       )}
 
