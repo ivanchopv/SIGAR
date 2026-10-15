@@ -116,7 +116,12 @@ function App() {
     setFecha('')
     setMonto('')
 
-    alert('Pago registrado correctamente')
+    alert(
+      `PAGO REGISTRADO CORRECTAMENTE\n\n` +
+      `Residente: ${nuevoPago.residente}\n` +
+      `Fecha: ${nuevoPago.fecha.split('-').reverse().join('/')}\n` +
+      `Importe: $${nuevoPago.monto.toLocaleString('es-MX')}`
+    )
   }
 
 
@@ -183,7 +188,7 @@ function App() {
   )
 
   // HU-04 - INFORMACIÓN DEL RESIDENTE
-  const residentesCuenta  = [
+  const residentesCuenta = [
     'Ana López',
     'Carlos Ruiz',
     'José Martínez',
@@ -324,6 +329,16 @@ function App() {
         </button>
         <button
           className={
+            seccionActiva === 'reportes'
+              ? 'menu-activo'
+              : ''
+          }
+          onClick={() => cambiarSeccion('reportes')}
+        >
+          Reportes
+        </button>
+        <button
+          className={
             seccionActiva === 'residentes'
               ? 'menu-activo'
               : ''
@@ -369,6 +384,10 @@ function App() {
               <p>
                 Adeudos pendientes
               </p>
+            </div>
+            <div className="card">
+              <h3>{residentes.length}</h3>
+              <p>Residentes registrados</p>
             </div>
           </section>
         </>
@@ -475,6 +494,79 @@ function App() {
               {totalRecaudado.toLocaleString('es-MX')}
             </strong>
           </div>
+        </section>
+      )}
+
+
+      {seccionActiva === 'reportes' && (
+        <section className="seccion">
+          <div className="titulo-seccion">
+            <div>
+              <h2>Reporte de pagos</h2>
+              <p>
+                Consulta el resumen y el detalle de los pagos registrados.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="boton-principal"
+              onClick={() => window.print()}
+            >
+              Imprimir reporte
+            </button>
+          </div>
+
+          <div className="estado-cuenta">
+            <div className="dato-cuenta">
+              <strong>Total de pagos</strong>
+              <span>{pagos.length}</span>
+            </div>
+
+            <div className="dato-cuenta">
+              <strong>Total recaudado</strong>
+              <span>
+                ${totalRecaudado.toLocaleString('es-MX')}
+              </span>
+            </div>
+          </div>
+
+          <h3>Detalle de pagos</h3>
+
+          {pagos.length === 0 ? (
+            <p>No hay pagos registrados para generar el reporte.</p>
+          ) : (
+            <table className="tabla">
+              <thead>
+                <tr>
+                  <th>Residente</th>
+                  <th>Fecha</th>
+                  <th>Monto</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {pagos.map((pago) => (
+                  <tr key={pago.id}>
+                    <td>{pago.residente}</td>
+                    <td>{pago.fecha}</td>
+                    <td>
+                      ${pago.monto.toLocaleString('es-MX')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+
+              <tfoot>
+                <tr>
+                  <th colSpan="2">Total recaudado</th>
+                  <th>
+                    ${totalRecaudado.toLocaleString('es-MX')}
+                  </th>
+                </tr>
+              </tfoot>
+            </table>
+          )}
         </section>
       )}
 
