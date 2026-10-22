@@ -5,6 +5,14 @@ function App() {
   // NAVEGACIÓN
 
   const [seccionActiva, setSeccionActiva] = useState('inicio')
+  const [tipoReporte, setTipoReporte] = useState('pagos')
+  const [anioReporte, setAnioReporte] = useState('2026')
+
+  const [solicitudes] = useState([
+    { id: 1, tipo: 'Mantenimiento', descripcion: 'Revisión de luminaria', estado: 'Abierta' },
+    { id: 2, tipo: 'Administrativa', descripcion: 'Actualización de datos', estado: 'En proceso' },
+    { id: 3, tipo: 'Mantenimiento', descripcion: 'Revisión de fuga de agua', estado: 'Cerrada' },
+  ])
 
   // HU-01 - REGISTRO DE PAGOS
   const [nombre, setNombre] = useState('')
@@ -174,6 +182,16 @@ function App() {
           : residente
       )
     )
+  }
+
+  // FORMATO PARA REPORTES Y RESUMEN GENERAL
+  const formatearMoneda = (cantidad) =>
+    cantidad.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 2 })
+
+  const formatearFecha = (fechaISO) => {
+    if (!fechaISO) return '—'
+    const [anio, mes, dia] = fechaISO.split('-')
+    return `${dia}/${mes}/${anio}`
   }
 
   // CÁLCULOS
@@ -347,6 +365,24 @@ function App() {
         >
           Residentes
         </button>
+        <button
+          className={seccionActiva === 'informacion' ? 'menu-activo' : ''}
+          onClick={() => cambiarSeccion('informacion')}
+        >
+          Información
+        </button>
+        <button
+          className={seccionActiva === 'resumen' ? 'menu-activo' : ''}
+          onClick={() => cambiarSeccion('resumen')}
+        >
+          Resumen general
+        </button>
+        <button
+          className={seccionActiva === 'integracion' ? 'menu-activo' : ''}
+          onClick={() => cambiarSeccion('integracion')}
+        >
+          Integración
+        </button>
       </nav>
       {seccionActiva === 'inicio' && (
         <>
@@ -502,70 +538,115 @@ function App() {
         <section className="seccion">
           <div className="titulo-seccion">
             <div>
-              <h2>Reporte de pagos</h2>
-              <p>
-                Consulta el resumen y el detalle de los pagos registrados.
-              </p>
+              <h2>Reportes administrativos</h2>
+              <p>Selecciona el tipo de información que deseas consultar.</p>
             </div>
-
-            <button
-              type="button"
-              className="boton-principal"
-              onClick={() => window.print()}
-            >
+            <button type="button" className="boton-principal" onClick={() => window.print()}>
               Imprimir reporte
             </button>
           </div>
 
-          <div className="estado-cuenta">
-            <div className="dato-cuenta">
-              <strong>Total de pagos</strong>
-              <span>{pagos.length}</span>
+          <div className="filtros-reporte">
+            <div className="campo">
+              <label htmlFor="tipoReporte">Tipo de reporte</label>
+              <select id="tipoReporte" value={tipoReporte} onChange={(e) => setTipoReporte(e.target.value)}>
+                <option value="pagos">Pagos registrados</option>
+                <option value="adeudos">Adeudos pendientes</option>
+                <option value="residentes">Residentes registrados</option>
+                <option value="solicitudes">Solicitudes por estado</option>
+              </select>
             </div>
-
-            <div className="dato-cuenta">
-              <strong>Total recaudado</strong>
-              <span>
-                ${totalRecaudado.toLocaleString('es-MX')}
-              </span>
-            </div>
+            {tipoReporte === 'pagos' && (
+              <div className="campo">
+                <label htmlFor="anioReporte">Año</label>
+                <select id="anioReporte" value={anioReporte} onChange={(e) => setAnioReporte(e.target.value)}>
+                  <option value="2026">2026</option>
+                  <option value="2025">2025</option>
+                </select>
+              </div>
+            )}
           </div>
 
-          <h3>Detalle de pagos</h3>
+          {tipoReporte === 'pagos' && (() => {
+            const pagosAnio = pagos.filter((pago) => pago.fecha.startsWith(anioReporte))
+            const totalAnual = pagosAnio.reduce((total, pago) => total + pago.monto, 0)
+            const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+            const pagosPorMes = meses.map((mes, indice) => {
+              const mesNumero = String(indice + 1).padStart(2, '0')
+              const delMes = pagosAnio.filter((pago) => pago.fecha.slice(5, 7) === mesNumero)
+              return { mes, cantidad: delMes.length, total: delMes.reduce((sum, pago) => sum + pago.monto, 0) }
+            })
+            const maxMes = Math.max(...pagosPorMes.map((item) => item.total), 1)
+            return (
+              <>
+                <div className="estado-cuenta">
+                  <div className="dato-cuenta"><strong>Pagos del año</strong><span>{pagosAnio.length}</span></div>
+                  <div className="dato-cuenta"><strong>Total recaudado</strong><span>{formatearMoneda(totalAnual)}</span></div>
+                </div>
+                <h3>Pagos por mes · {anioReporte}</h3>
+                <div className="grafica-meses">
+                  {pagosPorMes.map((item) => (
+                    <div className="barra-mes" key={item.mes}>
+                      <span className="barra-valor">{item.total ? formatearMoneda(item.total) : '$0'}</span>
+                      <div className="barra-fondo"><div className="barra-relleno" style={{ height: `${(item.total / maxMes) * 100}%` }} /></div>
+                      <span className="barra-etiqueta">{item.mes}</span>
+                    </div>
+                  ))}
+                </div>
+                <table className="tabla">
+                  <thead><tr><th>Residente</th><th>Fecha</th><th>Monto</th></tr></thead>
+                  <tbody>
+                    {pagosAnio.map((pago) => (
+                      <tr key={pago.id}><td>{pago.residente}</td><td>{formatearFecha(pago.fecha)}</td><td>{formatearMoneda(pago.monto)}</td></tr>
+                    ))}
+                  </tbody>
+                  <tfoot><tr><th colSpan="2">Total del periodo</th><th>{formatearMoneda(totalAnual)}</th></tr></tfoot>
+                </table>
+                {pagosAnio.length === 0 && <p>No hay pagos registrados para el año seleccionado.</p>}
+              </>
+            )
+          })()}
 
-          {pagos.length === 0 ? (
-            <p>No hay pagos registrados para generar el reporte.</p>
-          ) : (
-            <table className="tabla">
-              <thead>
-                <tr>
-                  <th>Residente</th>
-                  <th>Fecha</th>
-                  <th>Monto</th>
-                </tr>
-              </thead>
+          {tipoReporte === 'adeudos' && (
+            <>
+              <div className="estado-cuenta">
+                <div className="dato-cuenta"><strong>Adeudos pendientes</strong><span>{adeudos.length}</span></div>
+                <div className="dato-cuenta"><strong>Total pendiente</strong><span>{formatearMoneda(totalAdeudos)}</span></div>
+              </div>
+              <table className="tabla">
+                <thead><tr><th>Residente</th><th>Monto pendiente</th><th>Estado</th></tr></thead>
+                <tbody>{adeudos.map((adeudo) => <tr key={adeudo.id}><td>{adeudo.residente}</td><td>{formatearMoneda(adeudo.monto)}</td><td>{adeudo.estado}</td></tr>)}</tbody>
+              </table>
+            </>
+          )}
 
-              <tbody>
-                {pagos.map((pago) => (
-                  <tr key={pago.id}>
-                    <td>{pago.residente}</td>
-                    <td>{pago.fecha}</td>
-                    <td>
-                      ${pago.monto.toLocaleString('es-MX')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+          {tipoReporte === 'residentes' && (
+            <>
+              <div className="estado-cuenta">
+                <div className="dato-cuenta"><strong>Total de residentes</strong><span>{residentes.length}</span></div>
+                <div className="dato-cuenta"><strong>Activos</strong><span>{residentes.filter((r) => r.estado === 'Activo').length}</span></div>
+                <div className="dato-cuenta"><strong>Inactivos</strong><span>{residentes.filter((r) => r.estado === 'Inactivo').length}</span></div>
+              </div>
+              <table className="tabla">
+                <thead><tr><th>Nombre</th><th>Casa</th><th>Estado</th></tr></thead>
+                <tbody>{residentes.map((residente) => <tr key={residente.id}><td>{residente.nombre}</td><td>{residente.casa}</td><td>{residente.estado}</td></tr>)}</tbody>
+              </table>
+            </>
+          )}
 
-              <tfoot>
-                <tr>
-                  <th colSpan="2">Total recaudado</th>
-                  <th>
-                    ${totalRecaudado.toLocaleString('es-MX')}
-                  </th>
-                </tr>
-              </tfoot>
-            </table>
+          {tipoReporte === 'solicitudes' && (
+            <>
+              <div className="estado-cuenta">
+                <div className="dato-cuenta"><strong>Total de solicitudes de ejemplo</strong><span>{solicitudes.length}</span></div>
+                <div className="dato-cuenta"><strong>Abiertas</strong><span>{solicitudes.filter((s) => s.estado === 'Abierta').length}</span></div>
+                <div className="dato-cuenta"><strong>En proceso</strong><span>{solicitudes.filter((s) => s.estado === 'En proceso').length}</span></div>
+              </div>
+              <p className="nota-demo">Los datos de solicitudes son ejemplos en memoria para probar la presentación del reporte.</p>
+              <table className="tabla">
+                <thead><tr><th>Tipo</th><th>Descripción</th><th>Estado</th></tr></thead>
+                <tbody>{solicitudes.map((solicitud) => <tr key={solicitud.id}><td>{solicitud.tipo}</td><td>{solicitud.descripcion}</td><td>{solicitud.estado}</td></tr>)}</tbody>
+              </table>
+            </>
           )}
         </section>
       )}
@@ -958,8 +1039,94 @@ function App() {
         </section>
       )}
 
+      {seccionActiva === 'informacion' && (
+        <section className="seccion">
+          <div className="titulo-seccion">
+            <div>
+              <h2>Información de la residencia</h2>
+              <p>Consulta de información administrativa disponible para los residentes.</p>
+            </div>
+            <span className="etiqueta-informativa">Información de ejemplo</span>
+          </div>
+          <div className="informacion-grid">
+            <article className="informacion-card">
+              <h3>Datos generales</h3>
+              <dl>
+                <dt>Nombre</dt><dd>Residencial Los Robles</dd>
+                <dt>Ubicación</dt><dd>Estado de México</dd>
+                <dt>Tipo de administración</dt><dd>Residencial</dd>
+                <dt>Uso del sistema</dt><dd>Gestión administrativa y consulta</dd>
+              </dl>
+            </article>
+            <article className="informacion-card">
+              <h3>Información para residentes</h3>
+              <ul>
+                <li>Consultar pagos y adeudos en los módulos correspondientes.</li>
+                <li>Revisar los avisos publicados por la administración cuando el módulo esté disponible.</li>
+                <li>Registrar solicitudes o incidencias mediante el módulo de solicitudes cuando esté disponible.</li>
+              </ul>
+            </article>
+          </div>
+          <p className="nota-demo">Los datos generales mostrados son de demostración y deben confirmarse con la información oficial de la residencia antes de publicarse.</p>
+        </section>
+      )}
+
+      {seccionActiva === 'resumen' && (
+        <section className="seccion">
+          <h2>Resumen general</h2>
+          <p>Indicadores calculados a partir de los datos de ejemplo que mantiene actualmente la aplicación en memoria.</p>
+          <div className="resumen resumen-general">
+            <div className="card"><h3>{residentes.length}</h3><p>Residentes registrados</p></div>
+            <div className="card"><h3>{formatearMoneda(totalRecaudado)}</h3><p>Pagos registrados</p></div>
+            <div className="card"><h3>{formatearMoneda(totalAdeudos)}</h3><p>Adeudos pendientes</p></div>
+            <div className="card"><h3>{solicitudes.filter((s) => s.estado !== 'Cerrada').length}</h3><p>Solicitudes abiertas o en proceso</p></div>
+          </div>
+          <h3>Indicadores de solicitudes</h3>
+          <table className="tabla">
+            <thead><tr><th>Estado</th><th>Cantidad</th></tr></thead>
+            <tbody>
+              <tr><td>Abierta</td><td>{solicitudes.filter((s) => s.estado === 'Abierta').length}</td></tr>
+              <tr><td>En proceso</td><td>{solicitudes.filter((s) => s.estado === 'En proceso').length}</td></tr>
+              <tr><td>Cerrada</td><td>{solicitudes.filter((s) => s.estado === 'Cerrada').length}</td></tr>
+            </tbody>
+          </table>
+          <p className="nota-demo">Los indicadores se actualizan al cambiar los datos durante la sesión. La aplicación aún no utiliza persistencia en base de datos.</p>
+        </section>
+      )}
+
+      {seccionActiva === 'integracion' && (
+        <section className="seccion">
+          <h2>Integración y validación del flujo</h2>
+          <div className="flujo-modulos">
+            {[
+              { id: 'residentes', titulo: 'Residentes', detalle: 'Consulta y gestión de residentes' },
+              { id: 'registro', titulo: 'Pagos', detalle: 'Registro de pagos' },
+              { id: 'adeudos', titulo: 'Adeudos', detalle: 'Consulta de pagos pendientes' },
+              { id: 'informacion', titulo: 'Información', detalle: 'Consulta de datos de la residencia' },
+              { id: 'reportes', titulo: 'Reportes', detalle: 'Generación de reportes administrativos' },
+              { id: 'resumen', titulo: 'Resumen general', detalle: 'Indicadores de operación' },
+            ].map((modulo, indice) => (
+              <button type="button" className="flujo-modulo" key={modulo.id} onClick={() => cambiarSeccion(modulo.id)}>
+                <span className="flujo-numero">{String(indice + 1).padStart(2, '0')}</span>
+                <strong>{modulo.titulo}</strong>
+                <span>{modulo.detalle}</span>
+                <span className="flujo-abrir">Abrir módulo →</span>
+              </button>
+            ))}
+          </div>
+          <h3>Lista de verificación de integración</h3>
+          <ul className="lista-validacion">
+            <li>Comprobar que el menú permita acceder a cada módulo.</li>
+            <li>Verificar que los totales del resumen coincidan con pagos y adeudos.</li>
+            <li>Generar un reporte y revisar que los datos correspondan a los registros visibles.</li>
+            <li>Revisar que la navegación no produzca errores en la consola del navegador.</li>
+          </ul>
+          <p className="nota-demo">Esta lista define las verificaciones por ejecutar; no indica que las pruebas ya hayan sido aprobadas.</p>
+        </section>
+      )}
+
       <footer className="footer">
-        Proyecto II · Sprint 1 · SIGAR
+        Proyecto II · Sprint 3 · SIGAR
       </footer>
 
     </div>
