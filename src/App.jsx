@@ -395,37 +395,59 @@ function App() {
               los pagos de los residentes.
             </p>
           </section>
-          <section className="resumen">
-            <div className="card">
-              <h3>
-                {pagos.length}
-              </h3>
-              <p>
-                Pagos registrados
-              </p>
-            </div>
-            <div className="card">
-              <h3>
-                ${totalRecaudado.toLocaleString('es-MX')}
-              </h3>
-              <p>
-                Total recaudado
-              </p>
-            </div>
-            <div className="card">
-              <h3>
-                {adeudos.length}
-              </h3>
 
-              <p>
-                Adeudos pendientes
-              </p>
-            </div>
-            <div className="card">
+          <section className="dashboard-grid">
+
+            <article className="dashboard-card card-pagos">
+              <div className="dashboard-card-top">
+                <div className="dashboard-icon">🧾</div>
+                <span className="dashboard-tag">Actividad</span>
+              </div>
+              <h3>{pagos.length}</h3>
+              <p>Pagos registrados</p>
+              <span className="dashboard-detail">
+                Operaciones registradas en el sistema
+              </span>
+            </article>
+
+            <article className="dashboard-card card-ingresos">
+              <div className="dashboard-card-top">
+                <div className="dashboard-icon">💰</div>
+                <span className="dashboard-tag">Ingresos</span>
+              </div>
+              <h3>{formatearMoneda(totalRecaudado)}</h3>
+              <p>Total recaudado</p>
+              <span className="dashboard-detail">
+                Importe acumulado de pagos
+              </span>
+            </article>
+
+            <article className="dashboard-card card-adeudos">
+              <div className="dashboard-card-top">
+                <div className="dashboard-icon">⚠️</div>
+                <span className="dashboard-tag">Pendientes</span>
+              </div>
+              <h3>{adeudos.length}</h3>
+              <p>Adeudos pendientes</p>
+              <span className="dashboard-detail">
+                Residentes con pagos pendientes
+              </span>
+            </article>
+
+            <article className="dashboard-card card-residentes">
+              <div className="dashboard-card-top">
+                <div className="dashboard-icon">👥</div>
+                <span className="dashboard-tag">Comunidad</span>
+              </div>
               <h3>{residentes.length}</h3>
               <p>Residentes registrados</p>
-            </div>
+              <span className="dashboard-detail">
+                Residentes registrados en SIGAR
+              </span>
+            </article>
+
           </section>
+
         </>
       )}
       {seccionActiva === 'registro' && (
@@ -1067,7 +1089,6 @@ function App() {
               </ul>
             </article>
           </div>
-          <p className="nota-demo">Los datos generales mostrados son de demostración y deben confirmarse con la información oficial de la residencia antes de publicarse.</p>
         </section>
       )}
 
@@ -1090,7 +1111,6 @@ function App() {
               <tr><td>Cerrada</td><td>{solicitudes.filter((s) => s.estado === 'Cerrada').length}</td></tr>
             </tbody>
           </table>
-          <p className="nota-demo">Los indicadores se actualizan al cambiar los datos durante la sesión. La aplicación aún no utiliza persistencia en base de datos.</p>
         </section>
       )}
 
@@ -1121,7 +1141,6 @@ function App() {
             <li>Generar un reporte y revisar que los datos correspondan a los registros visibles.</li>
             <li>Revisar que la navegación no produzca errores en la consola del navegador.</li>
           </ul>
-          <p className="nota-demo">Esta lista define las verificaciones por ejecutar; no indica que las pruebas ya hayan sido aprobadas.</p>
         </section>
       )}
 

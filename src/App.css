@@ -884,3 +884,124 @@ select {
     padding: 0;
   }
 }
+
+
+/* DASHBOARD - TARJETAS DE INDICADORES */
+
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 22px auto;
+  width: 85%;
+  max-width: 1150px;
+}
+
+.dashboard-card {
+  background: #ffffff;
+  padding: 17px 20px;
+  border-radius: 14px;
+  border: 1px solid #e5eaf0;
+  border-top: 4px solid;
+  box-shadow: 0 3px 10px rgba(20, 55, 80, 0.07);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  min-height: 155px;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 16px rgba(20, 55, 80, 0.12);
+}
+
+.dashboard-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.dashboard-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 21px;
+}
+
+.dashboard-card h3 {
+  font-size: 25px;
+  margin: 0 0 5px;
+  color: #174f70;
+}
+
+.dashboard-card p {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 6px;
+  color: #24445c;
+}
+
+.dashboard-detail {
+  font-size: 11px;
+  color: #718096;
+}
+
+.dashboard-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: 20px;
+}
+
+@media (max-width: 550px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    width: 95%;
+    gap: 12px;
+  }
+}
+
+/* Colores por indicador */
+
+.card-pagos {
+  border-top-color: #3478d4;
+}
+
+.card-pagos .dashboard-icon,
+.card-pagos .dashboard-tag {
+  background: #eaf2ff;
+  color: #3478d4;
+}
+
+.card-ingresos {
+  border-top-color: #19a477;
+}
+
+.card-ingresos .dashboard-icon,
+.card-ingresos .dashboard-tag {
+  background: #e5f7ef;
+  color: #16845f;
+}
+
+.card-adeudos {
+  border-top-color: #e99a35;
+}
+
+.card-adeudos .dashboard-icon,
+.card-adeudos .dashboard-tag {
+  background: #fff3df;
+  color: #bd781d;
+}
+
+.card-residentes {
+  border-top-color: #8561cf;
+}
+
+.card-residentes .dashboard-icon,
+.card-residentes .dashboard-tag {
+  background: #f0eaff;
+  color: #7954bd;
+}
